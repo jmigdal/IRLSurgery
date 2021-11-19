@@ -35,12 +35,18 @@ mimicPos = [200+550, 200]
 vectorPos = [75, 500-75]
 vectorBase = [75, 500-75]
 
+maxScalpelSpeed = 2 #max spd of scalpel in pixels per second
+
+dataDrop = False #true when data is being dropped
+
 reset_screen()
 
 clock = pygame.time.Clock()
-print(clock.get_time())
 time_since_last_run = 0
+
+#testing
 test_runs = 0
+startTime = pygame.time.get_ticks()
 
 # Run until the user asks to quit
 running = True
@@ -51,8 +57,15 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:
+            if event.key == pygame.K_r: #when r is pressed, reset screen and re-align mimic position
                 reset_screen()
+                mimicPos[0] = scalpelPos[0] + 700 - 150
+                mimicPos[1] = scalpelPos[1]
+            if event.key == pygame.K_SPACE:
+                dataDrop = True
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_SPACE:
+                dataDrop = False
 
     #only update 100 times per second maximum
     time_since_last_run += dt
@@ -65,26 +78,30 @@ while running:
     #draw joystick circle to overwite last vector
     pygame.draw.circle(screen, (255, 0, 0), (75, 500-75), 70)
 
+    #only update scalpel when moouse is in surgey window
     mcoords = pygame.mouse.get_pos()
     if not (150 < mcoords[0] < 700 and 0 < mcoords[1] < 500):
         continue
 
+    #get the normalized vector from current scalpel position to the mouse position
     vectorLength = math.sqrt((scalpelPos[0] - mcoords[0]) ** 2 + (scalpelPos[1] - mcoords[1]) ** 2)
     if vectorLength == 0:
         vectorNorm = [0, 0]
     else:
         vectorNorm = [(mcoords[0] - scalpelPos[0]) / vectorLength, (scalpelPos[1] - mcoords[1]) / vectorLength]
-    if vectorLength < 70:
-        vectorPos[0] = round(vectorBase[0] + vectorNorm[0] * vectorLength)
-        vectorPos[1] = round(vectorBase[1] - vectorNorm[1] * vectorLength)
+
+    #draw vector on joystick window with max length being the max speed of the scalpel
+    if vectorLength < maxScalpelSpeed:
+        vectorPos[0] = vectorBase[0] + vectorNorm[0] * vectorLength * 65 / maxScalpelSpeed
+        vectorPos[1] = vectorBase[1] - vectorNorm[1] * vectorLength * 65 / maxScalpelSpeed
         pygame.draw.line(screen, (0, 0, 0), vectorBase, vectorPos)
     else:
-        vectorPos[0] = round(vectorBase[0] + vectorNorm[0] * 65)  #look at next comment
-        vectorPos[1] = round(vectorBase[1] - vectorNorm[1] * 65)  #67 is a wierd hack to prevent drawing outside circle
+        vectorPos[0] = vectorBase[0] + vectorNorm[0] * 65  #look at next comment
+        vectorPos[1] = vectorBase[1] - vectorNorm[1] * 65  #65 is a wierd hack to prevent drawing outside circle
         pygame.draw.line(screen, (0, 0, 0), vectorBase, vectorPos)
 
-    if vectorLength > 2: #2 pixel per 1/60th of a second (max for width 3 circle
-        scalpelSpeed = 2
+    if vectorLength > maxScalpelSpeed: #2 pixel per 1/60th of a second (max for width 3 circle
+        scalpelSpeed = maxScalpelSpeed
     else:
         scalpelSpeed = vectorLength
 
@@ -100,8 +117,9 @@ while running:
     if scalpelPos[1] > 500:
         scalpelPos[1] = 500
 
-    mimicPos[0] = scalpelPos[0] + 700 - 150
-    mimicPos[1] = scalpelPos[1]
+    if not dataDrop:
+        mimicPos[0] = mimicPos[0] + vectorNorm[0] * scalpelSpeed
+        mimicPos[1] = mimicPos[1] - vectorNorm[1] * scalpelSpeed
 
     pygame.draw.circle(screen, (0, 0, 0), scalpelPos, 3)
 
@@ -110,8 +128,10 @@ while running:
     # Flip the display
     pygame.display.flip()
 
+endTime = pygame.time.get_ticks()
 print(test_runs)
-print(clock.get_time())
+print(endTime)
+print(test_runs / ((endTime - startTime) / 1000)) # number of updates per second (average)
 
 # Done! Time to quit.
 pygame.quit()
