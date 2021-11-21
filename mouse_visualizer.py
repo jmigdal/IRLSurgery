@@ -1,10 +1,16 @@
 import math
 import pygame
+import json
 
 pygame.init()
 pygame.display.set_caption('Surgery Boi')
 bigL = pygame.image.load(r'C:\Users\James Migdal\Downloads\the_quantilizer(face32x32).png')
 pygame.display.set_icon(bigL)
+
+#save the policy and corresponding legal states and actions in a dict
+json_file = open('dict_package.json')
+data = json.load(json_file)
+json_file.close()
 
 #function to reset screen
 def reset_screen():
@@ -25,6 +31,75 @@ def reset_screen():
 
     pygame.display.flip()
 
+#function to return the action to be taken based on the current continuous state
+def get_action(cont_state):
+    #save continuous cumL and cumTheta as l and t
+    l = cont_state[0]
+    t = cont_state[1]
+
+    #find the index of the nearest state in the data.get(states)
+    states = data.get('states')
+    nearest_state_index = 0
+    nearest_state_len = 1000000
+    nearest_state_the = 1000000
+
+    for i in range(len(states)):
+        dist = abs(l - states[i][0])
+        if dist < nearest_state_len:
+            nearest_state_len = dist
+
+    for i in range(len(states)):
+        if abs(l - states[i][0]) == nearest_state_len:
+            angle = abs(states[i][1] - t)
+            if angle < nearest_state_the:
+                nearest_state_the = angle
+                nearest_state_index = i
+
+    #with the index of the nearest state in data.get('states') get the action prescribed by data.get('policy')
+    action_index = round(data.get('policy')[nearest_state_index])
+    #print(states[nearest_state_index])
+    action = data.get('actions')[action_index]
+    return action
+
+#function to output the next state given the last state, dx, dy, and last theta
+def update_state(last_state, dx_dy, last_theta):
+    #L is the pythagorean length of dx and dy
+    L = math.sqrt(dx_dy[0] ** 2 + dx_dy[1] ** 2)
+
+    dx = dx_dy[0]
+    dy = dx_dy[1]
+
+    
+    if dx == 0:
+        if dy == 0:
+            theta = last_state[1]
+        elif dy > 0:
+            theta = math.pi / 2
+        else:
+            theta = 3 * math.pi / 2
+    elif dx > 0:
+        if dy > 0:
+            theta = math.atan(dy / dx)
+        else:
+            theta = math.atan(dy / dx) + 2 * math.pi
+    else:
+        theta = math.atan(dy / dx) + math.pi
+
+    next_state = last_state
+    if last_state[1] == -1000 and L == 0:
+        return next_state, last_theta
+    elif last_state[1] == -1000 and L != 0:
+        next_state[1] = 0
+    elif theta - last_theta > math.pi:
+        next_state[1] = next_state[1] + ((theta - 2 * math.pi) - last_theta)
+    elif theta - last_theta < -math.pi:
+        next_state[1] = next_state[1] + ((theta + 2 * math.pi) - last_theta)
+    else:
+        next_state[1] = next_state[1] + (theta - last_theta)
+    last_theta = theta
+
+    return next_state, last_theta
+
 
 # Set up the drawing window
 screen = pygame.display.set_mode([700+550, 500])
@@ -38,6 +113,8 @@ vectorBase = [75, 500-75]
 maxScalpelSpeed = 2 #max spd of scalpel in pixels per second
 
 dataDrop = False #true when data is being dropped
+last_theta = 0 #needed to update state
+mimicState = [0, -1000] #-1000 is used to show that there is no previous theta
 
 reset_screen()
 
@@ -117,9 +194,18 @@ while running:
     if scalpelPos[1] > 500:
         scalpelPos[1] = 500
 
+    act_dx_dy = [vectorNorm[0] * scalpelSpeed, vectorNorm[1] * scalpelSpeed]
     if not dataDrop:
         mimicPos[0] = mimicPos[0] + vectorNorm[0] * scalpelSpeed
         mimicPos[1] = mimicPos[1] - vectorNorm[1] * scalpelSpeed
+        mimicState, last_theta = update_state(mimicState, act_dx_dy , last_theta)
+    else:
+        action = get_action(mimicState)
+        vectorPolicy = [action[0] * math.cos(action[1]), action[0] * math.sin(action[0])]
+
+        mimicPos[0] = mimicPos[0] + vectorPolicy[0]
+        mimicPos[1] = mimicPos[1] - vectorPolicy[1]
+        mimicState, last_theta = update_state(mimicState, vectorPolicy, last_theta)
 
     pygame.draw.circle(screen, (0, 0, 0), scalpelPos, 3)
 
