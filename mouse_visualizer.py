@@ -4,8 +4,8 @@ import json
 
 pygame.init()
 pygame.display.set_caption('Surgery Boi')
-bigL = pygame.image.load(r'C:\Users\James Migdal\Downloads\the_quantilizer(face32x32).png')
-pygame.display.set_icon(bigL)
+#bigL = pygame.image.load(r'C:\Users\James Migdal\Downloads\the_quantilizer(face32x32).png')
+#pygame.display.set_icon(bigL)
 
 #save the policy and corresponding legal states and actions in a dict
 json_file = open('dict_package.json')
@@ -18,13 +18,13 @@ def reset_screen():
     screen.fill((255, 255, 255))
 
     # draw surgery box
-    pygame.draw.rect(screen, (0, 0, 0), (150, 0, 700 - 150, 500), width=1)
+    pygame.draw.rect(screen, (0, 0, 0), (150, 0, 700 - 150, 500),1)
 
     # draw mimic box
-    pygame.draw.rect(screen, (0, 0, 0), (700, 0, 700 - 150, 500), width=1)
+    pygame.draw.rect(screen, (0, 0, 0), (700, 0, 700 - 150, 500),1)
 
     #draw joystick box
-    pygame.draw.rect(screen, (0, 0, 255), (0, 500-150, 150, 150), width=1)
+    pygame.draw.rect(screen, (0, 0, 255), (0, 500-150, 150, 150),1)
 
     # draw joystick circle
     pygame.draw.circle(screen, (255, 0, 0), (75, 500 - 75), 70)
