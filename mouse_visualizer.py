@@ -207,6 +207,13 @@ while running:
         mimicPos[1] = mimicPos[1] - vectorPolicy[1]
         mimicState, last_theta = update_state(mimicState, vectorPolicy, last_theta)
 
+
+    # Ensure that the positions are integers
+    scalpelPos[0] = int(round(scalpelPos[0]))
+    scalpelPos[1] = int(round(scalpelPos[1]))
+    mimicPos[0] = int(round(mimicPos[0]))
+    mimicPos[1] = int(round(mimicPos[1]))
+
     pygame.draw.circle(screen, (0, 0, 0), scalpelPos, 3)
 
     pygame.draw.circle(screen, (0, 0, 0), mimicPos, 3)
