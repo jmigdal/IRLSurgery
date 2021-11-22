@@ -20,11 +20,6 @@ def reset_screen():
     # Reset state
     mimicState = [0, 0]
 
-    global mimicState
-
-    # Reset State
-    mimicState = [0, 0]
-
     # Fill the background with white
     screen.fill((255, 255, 255))
 
