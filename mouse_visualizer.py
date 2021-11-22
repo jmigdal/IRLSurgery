@@ -1,20 +1,25 @@
 import math
+import numpy as np
 import pygame
 import json
 
 pygame.init()
 pygame.display.set_caption('Surgery Boi')
-# bigL = pygame.image.load(r'C:\Users\James Migdal\Downloads\the_quantilizer(face32x32).png')
-# pygame.display.set_icon(bigL)
+#bigL = pygame.image.load(r'C:\Users\James Migdal\Downloads\the_quantilizer(face32x32).png')
+#pygame.display.set_icon(bigL)
 
-# save the policy and corresponding legal states and actions in a dict
+#save the policy and corresponding legal states and actions in a dict
 json_file = open('dict_package.json')
 data = json.load(json_file)
 json_file.close()
 
-
-# function to reset screen
+#function to reset screen
 def reset_screen():
+    global mimicState
+
+    # Reset state
+    mimicState = [0, 0]
+
     global mimicState
 
     # Reset State
@@ -24,10 +29,10 @@ def reset_screen():
     screen.fill((255, 255, 255))
 
     # draw surgery box
-    pygame.draw.rect(screen, (0, 0, 0), (150, 0, 700 - 150, 500), 1)
+    pygame.draw.rect(screen, (0, 0, 0), (150, 0, 700 - 150, 500),1)
 
     # draw mimic box
-    pygame.draw.rect(screen, (0, 0, 0), (700, 0, 700 - 150, 500), 1)
+    pygame.draw.rect(screen, (0, 0, 0), (700, 0, 700 - 150, 500),1)
 
     # draw joystick box
     pygame.draw.rect(screen, (0, 0, 255), (0, 500 - 150, 150, 150), 1)
@@ -37,14 +42,13 @@ def reset_screen():
 
     pygame.display.flip()
 
-
-# function to return the action to be taken based on the current continuous state
+#function to return the action to be taken based on the current continuous state
 def get_action(cont_state):
-    # save continuous cumL and cumTheta as l and t
+    #save continuous cumL and cumTheta as l and t
     l = cont_state[0]
     t = cont_state[1]
 
-    # find the index of the nearest state in the data.get(states)
+    #find the index of the nearest state in the data.get(states)
     states = data.get('states')
     nearest_state_index = 0
     nearest_state_len = 1000000
@@ -62,19 +66,16 @@ def get_action(cont_state):
                 nearest_state_the = angle
                 nearest_state_index = i
 
-    # with the index of the nearest state in data.get('states') get the action prescribed by data.get('policy')
+    #with the index of the nearest state in data.get('states') get the action prescribed by data.get('policy')
     action_index = round(data.get('policy')[nearest_state_index])
-    # print(states[nearest_state_index])
+    #print(states[nearest_state_index])
     action = data.get('actions')[action_index]
     return action
 
-
-# function to output the next state given the last state, dx, dy, and last theta
+#function to output the next state given the last state, dx, dy, and last theta
 def update_state(last_state, dx_dy, last_theta):
-    # L is the pythagorean length of dx and dy
-    L = math.sqrt(dx_dy[0] ** 2 + dx_dy[1] ** 2)
-    next_state = last_state
-    next_state[0] = L + next_state[0]
+    #L is the pythagorean length of dx and dy
+    delta_L = math.sqrt(dx_dy[0] ** 2 + dx_dy[1] ** 2)
 
     dx = dx_dy[0]
     dy = dx_dy[1]
@@ -144,18 +145,17 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:  # when r is pressed, reset screen and re-align mimic position
+            if event.key == pygame.K_r: #when r is pressed, reset screen and re-align mimic position
                 reset_screen()
                 mimicPos[0] = scalpelPos[0] + 700 - 150
                 mimicPos[1] = scalpelPos[1]
-                last_theta = 0
             if event.key == pygame.K_SPACE:
                 dataDrop = True
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_SPACE:
                 dataDrop = False
 
-    # only update 100 times per second maximum
+    #only update 100 times per second maximum
     time_since_last_run += dt
     if time_since_last_run < 1000 / 100:
         continue
@@ -163,32 +163,32 @@ while running:
         time_since_last_run = 0
         test_runs += 1
 
-    # draw joystick circle to overwite last vector
-    pygame.draw.circle(screen, (255, 0, 0), (75, 500 - 75), 70)
+    #draw joystick circle to overwite last vector
+    pygame.draw.circle(screen, (255, 0, 0), (75, 500-75), 70)
 
-    # only update scalpel when moouse is in surgey window
+    #only update scalpel when moouse is in surgey window
     mcoords = pygame.mouse.get_pos()
     if not (150 < mcoords[0] < 700 and 0 < mcoords[1] < 500):
         continue
 
-    # get the normalized vector from current scalpel position to the mouse position
+    #get the normalized vector from current scalpel position to the mouse position
     vectorLength = math.sqrt((scalpelPos[0] - mcoords[0]) ** 2 + (scalpelPos[1] - mcoords[1]) ** 2)
     if vectorLength == 0:
         vectorNorm = [0, 0]
     else:
         vectorNorm = [(mcoords[0] - scalpelPos[0]) / vectorLength, (scalpelPos[1] - mcoords[1]) / vectorLength]
 
-    # draw vector on joystick window with max length being the max speed of the scalpel
+    #draw vector on joystick window with max length being the max speed of the scalpel
     if vectorLength < maxScalpelSpeed:
-        vectorPos[0] = int(vectorBase[0] + vectorNorm[0] * vectorLength * 65 / maxScalpelSpeed)
-        vectorPos[1] = int(vectorBase[1] - vectorNorm[1] * vectorLength * 65 / maxScalpelSpeed)
+        vectorPos[0] = vectorBase[0] + vectorNorm[0] * vectorLength * 65 / maxScalpelSpeed
+        vectorPos[1] = vectorBase[1] - vectorNorm[1] * vectorLength * 65 / maxScalpelSpeed
         pygame.draw.line(screen, (0, 0, 0), vectorBase, vectorPos)
     else:
-        vectorPos[0] = int(vectorBase[0] + vectorNorm[0] * 65 )# look at next comment
-        vectorPos[1] = int(vectorBase[1] - vectorNorm[1] * 65 ) # 65 is a wierd hack to prevent drawing outside circle
+        vectorPos[0] = vectorBase[0] + vectorNorm[0] * 65  #look at next comment
+        vectorPos[1] = vectorBase[1] - vectorNorm[1] * 65  #65 is a wierd hack to prevent drawing outside circle
         pygame.draw.line(screen, (0, 0, 0), vectorBase, vectorPos)
 
-    if vectorLength > maxScalpelSpeed:  # 2 pixel per 1/60th of a second (max for width 3 circle
+    if vectorLength > maxScalpelSpeed: #2 pixel per 1/60th of a second (max for width 3 circle
         scalpelSpeed = maxScalpelSpeed
     else:
         scalpelSpeed = vectorLength
@@ -206,6 +206,7 @@ while running:
         scalpelPos[1] = 500
 
     act_dx_dy = [vectorNorm[0] * scalpelSpeed, vectorNorm[1] * scalpelSpeed]
+    print(last_theta)
     if not dataDrop:
         mimicPos[0] = mimicPos[0] + vectorNorm[0] * scalpelSpeed
         mimicPos[1] = mimicPos[1] - vectorNorm[1] * scalpelSpeed
@@ -218,25 +219,24 @@ while running:
         mimicPos[1] = mimicPos[1] - vectorPolicy[1]
         mimicState, last_theta = update_state(mimicState, vectorPolicy, last_theta)
 
-
     # Ensure that the positions are integers
     scalpelPos[0] = int(round(scalpelPos[0]))
     scalpelPos[1] = int(round(scalpelPos[1]))
     mimicPos[0] = int(round(mimicPos[0]))
     mimicPos[1] = int(round(mimicPos[1]))
 
-    print(mimicState)
     pygame.draw.circle(screen, (0, 0, 0), scalpelPos, 3)
 
     pygame.draw.circle(screen, (0, 0, 0), mimicPos, 3)
 
     # Flip the display
     pygame.display.flip()
+    print(mimicState)
 
 endTime = pygame.time.get_ticks()
 print(test_runs)
 print(endTime)
-print(test_runs / ((endTime - startTime) / 1000))  # number of updates per second (average)
+print(test_runs / ((endTime - startTime) / 1000)) # number of updates per second (average)
 
 # Done! Time to quit.
 pygame.quit()
