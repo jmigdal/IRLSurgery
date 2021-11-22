@@ -198,7 +198,7 @@ while running:
     if not dataDrop:
         mimicPos[0] = mimicPos[0] + vectorNorm[0] * scalpelSpeed
         mimicPos[1] = mimicPos[1] - vectorNorm[1] * scalpelSpeed
-        mimicState, last_theta = update_state(mimicState, act_dx_dy , last_theta)
+        mimicState, last_theta = update_state(mimicState, act_dx_dy, last_theta)
     else:
         action = get_action(mimicState)
         vectorPolicy = [action[0] * math.cos(action[1]), action[0] * math.sin(action[0])]
