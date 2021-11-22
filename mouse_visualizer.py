@@ -106,6 +106,8 @@ def update_state(last_state, dx_dy, last_theta):
         next_state[1] = next_state[1] + (theta - last_theta)
     last_theta = theta
 
+    print(next_state)       #for testing
+
     return next_state, last_theta
 
 
