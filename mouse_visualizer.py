@@ -15,17 +15,22 @@ json_file.close()
 
 #function to reset screen
 def reset_screen():
+    global mimicState
+
+    # Reset state
+    mimicState = [0, 0]
+
     # Fill the background with white
     screen.fill((255, 255, 255))
 
     # draw surgery box
-    pygame.draw.rect(screen, (0, 0, 0), (150, 0, 700 - 150, 500),1)
+    pygame.draw.rect(screen, (0, 0, 0), (150, 0, 700 - 150, 500), 1)
 
     # draw mimic box
-    pygame.draw.rect(screen, (0, 0, 0), (700, 0, 700 - 150, 500),1)
+    pygame.draw.rect(screen, (0, 0, 0), (700, 0, 700 - 150, 500), 1)
 
     #draw joystick box
-    pygame.draw.rect(screen, (0, 0, 255), (0, 500-150, 150, 150),1)
+    pygame.draw.rect(screen, (0, 0, 255), (0, 500-150, 150, 150), 1)
 
     # draw joystick circle
     pygame.draw.circle(screen, (255, 0, 0), (75, 500 - 75), 70)
@@ -70,21 +75,26 @@ def update_state(last_state, dx_dy, last_theta):
     dx = dx_dy[0]
     dy = dx_dy[1]
 
-    theta = np.arctan2(dy, dx)
+    theta_act = np.arctan2(dy, dx)
 
     next_state = last_state
     next_state[0] = next_state[0] + delta_L
+
+    #next_state[1] = last_state[1] + theta_act
+    #last_theta = next_state[1]
+
     if last_state[1] == -1000 and delta_L == 0:
         return next_state, last_theta
     elif last_state[1] == -1000 and delta_L != 0:
         next_state[1] = 0
-    elif theta - last_theta > math.pi:
-        next_state[1] = next_state[1] + ((theta - 2 * math.pi) - last_theta)
-    elif theta - last_theta < -math.pi:
-        next_state[1] = next_state[1] + ((theta + 2 * math.pi) - last_theta)
+    elif theta_act - last_theta > math.pi:
+        next_state[1] = next_state[1] + ((theta_act - 2 * math.pi) - last_theta)
+    elif theta_act - last_theta < -math.pi:
+        next_state[1] = next_state[1] + ((theta_act + 2 * math.pi) - last_theta)
     else:
-        next_state[1] = next_state[1] + (theta - last_theta)
-    last_theta = theta
+        next_state[1] = next_state[1] + (theta_act - last_theta)
+    last_theta = theta_act
+
 
     return next_state, last_theta
 
@@ -183,7 +193,6 @@ while running:
         scalpelPos[1] = 500
 
     act_dx_dy = [vectorNorm[0] * scalpelSpeed, vectorNorm[1] * scalpelSpeed]
-    print(last_theta)
     if not dataDrop:
         mimicPos[0] = mimicPos[0] + vectorNorm[0] * scalpelSpeed
         mimicPos[1] = mimicPos[1] - vectorNorm[1] * scalpelSpeed
