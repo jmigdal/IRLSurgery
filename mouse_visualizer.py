@@ -15,6 +15,11 @@ json_file.close()
 
 # function to reset screen
 def reset_screen():
+    global mimicState
+
+    # Reset State
+    mimicState = [0, 0]
+
     # Fill the background with white
     screen.fill((255, 255, 255))
 
@@ -173,12 +178,12 @@ while running:
 
     # draw vector on joystick window with max length being the max speed of the scalpel
     if vectorLength < maxScalpelSpeed:
-        vectorPos[0] = vectorBase[0] + vectorNorm[0] * vectorLength * 65 / maxScalpelSpeed
-        vectorPos[1] = vectorBase[1] - vectorNorm[1] * vectorLength * 65 / maxScalpelSpeed
+        vectorPos[0] = int(vectorBase[0] + vectorNorm[0] * vectorLength * 65 / maxScalpelSpeed)
+        vectorPos[1] = int(vectorBase[1] - vectorNorm[1] * vectorLength * 65 / maxScalpelSpeed)
         pygame.draw.line(screen, (0, 0, 0), vectorBase, vectorPos)
     else:
-        vectorPos[0] = vectorBase[0] + vectorNorm[0] * 65  # look at next comment
-        vectorPos[1] = vectorBase[1] - vectorNorm[1] * 65  # 65 is a wierd hack to prevent drawing outside circle
+        vectorPos[0] = int(vectorBase[0] + vectorNorm[0] * 65 )# look at next comment
+        vectorPos[1] = int(vectorBase[1] - vectorNorm[1] * 65 ) # 65 is a wierd hack to prevent drawing outside circle
         pygame.draw.line(screen, (0, 0, 0), vectorBase, vectorPos)
 
     if vectorLength > maxScalpelSpeed:  # 2 pixel per 1/60th of a second (max for width 3 circle
@@ -211,12 +216,14 @@ while running:
         mimicPos[1] = mimicPos[1] - vectorPolicy[1]
         mimicState, last_theta = update_state(mimicState, vectorPolicy, last_theta)
 
+
     # Ensure that the positions are integers
     scalpelPos[0] = int(round(scalpelPos[0]))
     scalpelPos[1] = int(round(scalpelPos[1]))
     mimicPos[0] = int(round(mimicPos[0]))
     mimicPos[1] = int(round(mimicPos[1]))
 
+    print(mimicState)
     pygame.draw.circle(screen, (0, 0, 0), scalpelPos, 3)
 
     pygame.draw.circle(screen, (0, 0, 0), mimicPos, 3)
