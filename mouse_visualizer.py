@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import pygame
 import json
 
@@ -64,31 +65,18 @@ def get_action(cont_state):
 #function to output the next state given the last state, dx, dy, and last theta
 def update_state(last_state, dx_dy, last_theta):
     #L is the pythagorean length of dx and dy
-    L = math.sqrt(dx_dy[0] ** 2 + dx_dy[1] ** 2)
+    delta_L = math.sqrt(dx_dy[0] ** 2 + dx_dy[1] ** 2)
 
     dx = dx_dy[0]
     dy = dx_dy[1]
 
-    
-    if dx == 0:
-        if dy == 0:
-            theta = last_state[1]
-        elif dy > 0:
-            theta = math.pi / 2
-        else:
-            theta = 3 * math.pi / 2
-    elif dx > 0:
-        if dy > 0:
-            theta = math.atan(dy / dx)
-        else:
-            theta = math.atan(dy / dx) + 2 * math.pi
-    else:
-        theta = math.atan(dy / dx) + math.pi
+    theta = np.arctan2(dy, dx)
 
     next_state = last_state
-    if last_state[1] == -1000 and L == 0:
+    next_state[0] = next_state[0] + delta_L
+    if last_state[1] == -1000 and delta_L == 0:
         return next_state, last_theta
-    elif last_state[1] == -1000 and L != 0:
+    elif last_state[1] == -1000 and delta_L != 0:
         next_state[1] = 0
     elif theta - last_theta > math.pi:
         next_state[1] = next_state[1] + ((theta - 2 * math.pi) - last_theta)
@@ -195,6 +183,7 @@ while running:
         scalpelPos[1] = 500
 
     act_dx_dy = [vectorNorm[0] * scalpelSpeed, vectorNorm[1] * scalpelSpeed]
+    print(last_theta)
     if not dataDrop:
         mimicPos[0] = mimicPos[0] + vectorNorm[0] * scalpelSpeed
         mimicPos[1] = mimicPos[1] - vectorNorm[1] * scalpelSpeed
@@ -219,6 +208,7 @@ while running:
 
     # Flip the display
     pygame.display.flip()
+    print(mimicState)
 
 endTime = pygame.time.get_ticks()
 print(test_runs)
