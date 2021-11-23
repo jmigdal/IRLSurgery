@@ -70,7 +70,9 @@ def get_action(cont_state):
 #function to output the next state given the last state, dx, dy, and last theta
 def update_state(last_state, dx_dy, last_theta):
     #L is the pythagorean length of dx and dy
-    delta_L = math.sqrt(dx_dy[0] ** 2 + dx_dy[1] ** 2)
+    L = math.sqrt(dx_dy[0] ** 2 + dx_dy[1] ** 2)
+    next_state = last_state
+    next_state[0] = L + next_state[0]
 
     dx = dx_dy[0]
     dy = dx_dy[1]
