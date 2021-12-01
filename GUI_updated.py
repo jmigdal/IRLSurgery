@@ -53,14 +53,16 @@ def reset_screen():
     # draw mimic box
     pygame.draw.rect(screen, (0, 0, 0), (700, 0, 700 - 150, 500), width=7)
     #draw robot state
-    pygame.draw.rect(screen, color_light, (0, 75, 150, 115)) #x start, y start, width height
+    pygame.draw.rect(screen, color_light, (0, 55, 150, 90)) #x start, y start, width height
     #draw doc state
-    pygame.draw.rect(screen, color_light, (0, 200, 150, 90)) #x start, y start, width height
+    pygame.draw.rect(screen, color_light, (0, 145, 150, 80)) #x start, y start, width height
+    #draw error box
+    pygame.draw.rect(screen, color_light, (0, 220, 150, 70))
     #train button
-    pygame.draw.rect(screen, (0,100,0), (0, 290, 150, 60))
-    pygame.draw.rect(screen, (0,0,0), (0, 290, 150, 60), width =3)
+    pygame.draw.rect(screen, (0,100,0), (0, 310, 150, 40))
+    pygame.draw.rect(screen, (0,0,0), (0, 310, 150, 40), width =3)
     #draw restart button
-    pygame.draw.rect(screen, color_light, (0, 0, 150, 75)) #x start, y start, width height
+    pygame.draw.rect(screen, color_light, (0, 0, 150, 55)) #x start, y start, width height
     #draw joystick box
     pygame.draw.rect(screen, (0, 0, 255), (0, 350, 150, 150), width=1)
     # draw joystick circle
@@ -270,6 +272,8 @@ doc_state_A_text = smallerfont.render("Angle " + str(state_doc[1]), True , (255,
 robot_text = smallerfont.render('Robot State:' , True , (255,255,255))
 robot_state_L_text = smallerfont.render("Length " + str(state_robot[0]), True , (255,255,255))
 robot_state_A_text = smallerfont.render("Angle " + str(state_robot[1]), True , (255,255,255))
+error_text = smallerfont.render('Error:', True, (255,255,255))
+displacement_text = smallerfont.render('Disp.:', True,(255,255,255))
 # Set up the drawing window
 screen = pygame.display.set_mode([700+550, 500])
 reset_screen()
@@ -429,7 +433,7 @@ while running:
            pygame.draw.rect(screen, color_dark, (0, 0, 150, 75)) #x star, y start, width height
         else:
             pygame.draw.rect(screen, color_light, (0, 0, 150, 75)) #x star, y start, width height
-        screen.blit(text , (20,20))
+        screen.blit(text , (10,10))
         ##TRAIN BUTTON
         if (mcoords[0] <= 150) and (290 <=mcoords[1] <=350):
             pygame.draw.rect(screen, (0, 100, 0), (0, 290, 150, 60)) #x star, y start, width height
@@ -437,23 +441,28 @@ while running:
             pygame.draw.rect(screen, (0, 200, 0), (0, 290, 150, 60)) #x star, y start, width height 
         screen.blit(train_text , (20,305))  
         ##STATE OF DOC
-        pygame.draw.rect(screen, color_light, (0, 190, 150, 100)) #x start, y start, width height
-        pygame.draw.rect(screen, (0,0,0), (0, 190, 150, 100), width = 1) #x start, y start, width height
-        screen.blit(doc_text, (20,205))
+        pygame.draw.rect(screen, color_light, (0, 145, 150, 90)) #x start, y start, width height
+        pygame.draw.rect(screen, (0,0,0), (0, 145, 150, 90), width = 1) #x start, y start, width height
+        screen.blit(doc_text, (10,150))
         doc_state_L_text = smallerfont.render("Length " + str(round(state_doc[0])), True , (255,255,255))
         if (state_doc[1] != 0) and (state_doc[1] !=  180) and (state_doc[1] != 90) and (state_doc[1] != 270):
             doc_state_A_text = smallerfont.render("Angle " + str(round(state_doc[1])), True , (255,255,255))
-        screen.blit(doc_state_L_text, (20,230))
-        screen.blit(doc_state_A_text, (20,260))
+        screen.blit(doc_state_L_text, (10,175))
+        screen.blit(doc_state_A_text, (10,203))
         ##STATE of ROBOT
-        pygame.draw.rect(screen, color_light, (0, 75, 150, 115)) #x start, y start, width height
-        pygame.draw.rect(screen, (0,0,0), (0, 75, 150, 115), width = 1) #x start, y start, width height
-        screen.blit(robot_text, (20,90))
+        pygame.draw.rect(screen, color_light, (0, 55, 150, 90)) #x start, y start, width height
+        pygame.draw.rect(screen, (0,0,0), (0, 55, 150, 90), width = 1) #x start, y start, width height
+        screen.blit(robot_text, (10,60))
         robot_state_L_text = smallerfont.render("Length " + str(round(state_robot[0])), True , (255,255,255))
         if (state_robot[1] != 0) and (state_robot[1] !=  180) and (state_robot[1] != 90) and (state_robot[1] != 270):
             robot_state_A_text = smallerfont.render("Angle " + str(round(state_robot[1])), True , (255,255,255))
-        screen.blit(robot_state_L_text, (20,120))
-        screen.blit(robot_state_A_text, (20,150))
+        screen.blit(robot_state_L_text, (10,85))
+        screen.blit(robot_state_A_text, (10,110))
+        ##Error
+        pygame.draw.rect(screen, color_light, (0,250,150,20))
+        pygame.draw.rect(screen, (0,0,0), (0,235,150,55), width = 1)
+        screen.blit(error_text, (10,237))
+        screen.blit(displacement_text, (10, 262))
         ##Joystick circle to overwite last vector
         pygame.draw.circle(screen, (255, 0, 0), (75, 500-75), 70)
 
