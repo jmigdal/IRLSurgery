@@ -10,6 +10,7 @@ import sys
 import json
 import time
 from types import DynamicClassAttribute
+from statistics import mean
 
 
 
@@ -26,6 +27,13 @@ positive_bounded_radians = False
 quick_algo = True
 #IRL algo, not yet defined
 IRL_algo = False
+
+
+#############Global Lists for Error Calculation #############
+doclens = []
+docangs = []
+roblens = []
+robangs = []
 
 #function to reset screen
 def reset_screen():
@@ -262,6 +270,7 @@ color_dark = (0,0,0)
 # defining a font
 smallfont = pygame.font.SysFont('Corbel', 35)
 smallerfont = pygame.font.SysFont('Corbel', 25)
+smallererfont = pygame.font.SysFont('Corbel', 20) #I'm really good at naming conventions.
 # restart button and train button text
 text = smallfont.render('Restart' , True , (255,255,255))
 train_text = smallfont.render('Train' , True , (255,255,255))
@@ -272,7 +281,7 @@ doc_state_A_text = smallerfont.render("Angle " + str(state_doc[1]), True , (255,
 robot_text = smallerfont.render('Robot State:' , True , (255,255,255))
 robot_state_L_text = smallerfont.render("Length " + str(state_robot[0]), True , (255,255,255))
 robot_state_A_text = smallerfont.render("Angle " + str(state_robot[1]), True , (255,255,255))
-error_text = smallerfont.render('Error:', True, (255,255,255))
+
 displacement_text = smallerfont.render('Disp.:', True,(255,255,255))
 # Set up the drawing window
 screen = pygame.display.set_mode([700+550, 500])
@@ -301,10 +310,14 @@ while running:
                 robot_state_A_text = smallerfont.render("Angle " + str(0), True , (255,255,255))
                 doc_state_L_text = smallerfont.render("Length " + str(0), True , (255,255,255))
                 doc_state_A_text = smallerfont.render("Angle " + str(0), True , (255,255,255))
+                delta_l = smallererfont.render('Avg. ΔL: ' + str(0), True, (255,255,255))
+                delta_theta = smallererfont.render('Avg. Δθ: ' + str(0), True, (255,255,255))
                 screen.blit(robot_state_L_text, (20,120))
                 screen.blit(robot_state_A_text, (20,150))
                 screen.blit(doc_state_L_text, (20,230))
                 screen.blit(doc_state_A_text, (20,260))
+                screen.blit(delta_l, (7,240))
+                #screen.blit(delta_theta, (7, 262))
                 reset_screen()
             #Train button clicked
             elif (mcoords[0] <= 150) and (290 <=mcoords[1] <=350):
@@ -433,7 +446,7 @@ while running:
            pygame.draw.rect(screen, color_dark, (0, 0, 150, 75)) #x star, y start, width height
         else:
             pygame.draw.rect(screen, color_light, (0, 0, 150, 75)) #x star, y start, width height
-        screen.blit(text , (10,10))
+        screen.blit(text , (7,10))
         ##TRAIN BUTTON
         if (mcoords[0] <= 150) and (290 <=mcoords[1] <=350):
             pygame.draw.rect(screen, (0, 100, 0), (0, 290, 150, 60)) #x star, y start, width height
@@ -443,26 +456,37 @@ while running:
         ##STATE OF DOC
         pygame.draw.rect(screen, color_light, (0, 145, 150, 90)) #x start, y start, width height
         pygame.draw.rect(screen, (0,0,0), (0, 145, 150, 90), width = 1) #x start, y start, width height
-        screen.blit(doc_text, (10,150))
+        screen.blit(doc_text, (7,150))
         doc_state_L_text = smallerfont.render("Length " + str(round(state_doc[0])), True , (255,255,255))
         if (state_doc[1] != 0) and (state_doc[1] !=  180) and (state_doc[1] != 90) and (state_doc[1] != 270):
             doc_state_A_text = smallerfont.render("Angle " + str(round(state_doc[1])), True , (255,255,255))
-        screen.blit(doc_state_L_text, (10,175))
-        screen.blit(doc_state_A_text, (10,203))
+        screen.blit(doc_state_L_text, (7,175))
+        screen.blit(doc_state_A_text, (7,203))
+
+        doclens.append((round(state_doc[0])))
+        docangs.append((round(state_doc[1])))
         ##STATE of ROBOT
         pygame.draw.rect(screen, color_light, (0, 55, 150, 90)) #x start, y start, width height
         pygame.draw.rect(screen, (0,0,0), (0, 55, 150, 90), width = 1) #x start, y start, width height
-        screen.blit(robot_text, (10,60))
+        screen.blit(robot_text, (7,60))
         robot_state_L_text = smallerfont.render("Length " + str(round(state_robot[0])), True , (255,255,255))
         if (state_robot[1] != 0) and (state_robot[1] !=  180) and (state_robot[1] != 90) and (state_robot[1] != 270):
             robot_state_A_text = smallerfont.render("Angle " + str(round(state_robot[1])), True , (255,255,255))
-        screen.blit(robot_state_L_text, (10,85))
-        screen.blit(robot_state_A_text, (10,110))
+        screen.blit(robot_state_L_text, (7,85))
+        screen.blit(robot_state_A_text, (7,110))
+        roblens.append((round(state_robot[0])))
+        robangs.append((round(state_robot[1])))
         ##Error
-        pygame.draw.rect(screen, color_light, (0,250,150,20))
+        pygame.draw.rect(screen, color_light, (0,230,150,60))
         pygame.draw.rect(screen, (0,0,0), (0,235,150,55), width = 1)
-        screen.blit(error_text, (10,237))
-        screen.blit(displacement_text, (10, 262))
+        avglendiff = mean(abs(x - y) for x, y in zip(doclens, roblens))
+        avgangdiff = mean(abs(x - y) for x, y in zip(docangs, robangs))
+        #delta_l = smallererfont.render('Avg. ΔL: ' + str(round(avglendiff)), True, (255,255,255))
+        delta_l = smallererfont.render('ΔL: ' + str(abs(round(state_doc[0] - state_robot[0]))), True, (255,255,255))
+        delta_theta = smallererfont.render('Δθ: ' + str(abs(round(state_doc[1] - state_robot[1]))), True, (255,255,255))
+        screen.blit(delta_l, (7,240))
+        screen.blit(delta_theta, (80, 240))
+        screen.blit(displacement_text, (7, 262))
         ##Joystick circle to overwite last vector
         pygame.draw.circle(screen, (255, 0, 0), (75, 500-75), 70)
 
