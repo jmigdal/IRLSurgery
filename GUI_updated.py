@@ -281,8 +281,6 @@ doc_state_A_text = smallerfont.render("Angle " + str(state_doc[1]), True , (255,
 robot_text = smallerfont.render('Robot State:' , True , (255,255,255))
 robot_state_L_text = smallerfont.render("Length " + str(state_robot[0]), True , (255,255,255))
 robot_state_A_text = smallerfont.render("Angle " + str(state_robot[1]), True , (255,255,255))
-
-displacement_text = smallerfont.render('Disp.:', True,(255,255,255))
 # Set up the drawing window
 screen = pygame.display.set_mode([700+550, 500])
 reset_screen()
@@ -486,6 +484,9 @@ while running:
         delta_theta = smallererfont.render('Δθ: ' + str(abs(round(state_doc[1] - state_robot[1]))), True, (255,255,255))
         screen.blit(delta_l, (7,240))
         screen.blit(delta_theta, (80, 240))
+        ### Distance formula in polar coordinates: D = sqrt(r_1^2 + r_2^2 - 2(r_1)(r_2)(cos(theta_1 - theta_2)))
+        displacement = math.sqrt(abs(state_doc[0]**2 + state_robot[0]**2 - 2 * state_doc[0] * state_doc[0] *math.cos(math.radians(state_doc[1]) - math.radians(state_robot[1]))))
+        displacement_text = smallerfont.render('Disp.:' + str(round(displacement)), True,(255,255,255))
         screen.blit(displacement_text, (7, 262))
         ##Joystick circle to overwite last vector
         pygame.draw.circle(screen, (255, 0, 0), (75, 500-75), 70)
