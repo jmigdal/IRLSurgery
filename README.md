@@ -9,7 +9,7 @@
 To use the designed GUI naviagate to the branch_updated_gui folder and download the signature_graphing.py and GUI_Update.py files. 
 On line 158 where it has variable "file_to_draw" replace this line with the desired path where you will save your policy when it gets generated, and where the "import policy" button will look when clicked. (a sample character "a" policy csv is in the folder to test)
  
- ## Start training
+ ## Start training and implement a policy
 - first click the "train" button, name your directory as asked in the terminal, then navigate to the pi game app an start drawing your charecter (left click to start drawing recording, left click let up to stop and refresh drawing page). Draw as many trajectories as desired.
 - when done exit out of the application
 - next run the signature_graphing.py and navigate to one of the csv files genreated to generate a policy csv for your training set (you can exit out of graphs)
